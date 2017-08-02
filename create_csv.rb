@@ -66,11 +66,11 @@ Array.new(args).each do |json_file|
     product_code               = item['item_code']
     jan                        = item['jan']
     item_origin_url            = item['item_origin_url']
-    cates = []
-    item['categories'].each_with_index do |categories, i|
-      categories.each { |category| cates << category['category_id'] if category['depth'] == i + 1 && !category['category_id'].include?('p-bandai')} if categories
-    end if item['categories']
-    category_codes             = cates.join(' ')
+    category_codes = item['categories']
+    .map { |cat_route| cat_route&.max { |c1,c2| c1['depth'] <=> c2['depth'] } if cat_route }  # depth が一番大きいやつ
+    .reject { |cat| cat['category_id'].include? 'p-bandai' if cat }  # バンダイカテゴリを除外
+    .map { |cat| cat['category_id'] if cat }  # category から id だけ抽出
+    .join(' ')
     main_image_url             = main_image[0]['url']
     sub_image_url_1            = "http://buyee.jp/images/common/top/flow_purchase.png"
     copyright                  = item['copyright'] || 'copyright'
