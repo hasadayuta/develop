@@ -39,7 +39,7 @@ Array.new(args).each do |json_file|
     name_chs                  = "我们想要吃"
     name_cht                  = "我们想要吃"
     colors                    = item['options'].flat_map { |op| op['values'].map { |value| "色:#{value['name']}" } if op['option_code'] == 'color' }.compact!
-    variations                = item['options'].flat_map { |op| op['values'].map { |value| "#{colors.sample}#サイズ:#{value['name']}=id-#{value['name'].downcase}" }.join('&') if op['option_code'] == 'size' }.compact!.pop
+    variations                = item['options'].flat_map { |op| op['values'].map { |value| "#{colors.sample}#サイズ:#{value['name']}=id-#{value['name'].downcase}" }.join('&') if op['option_code'] == 'size' }.compact!&.pop
     price                     = item['price']
     description               = item['description']
     description_en            = "description_en"
@@ -49,7 +49,7 @@ Array.new(args).each do |json_file|
     meta_keywords_en          = "meta_keywords_en"
     meta_keywords_chs         = "我们想要吃"
     meta_keywords_cht         = "我们想要吃"
-    meta_descrption           = item['meta_description']
+    meta_description          = item['meta_description']
     meta_description_en       = "meta_desc_en"
     meta_description_chs      = "我们想要吃"
     meta_description_cht      = "我们想要吃"
@@ -66,11 +66,11 @@ Array.new(args).each do |json_file|
     product_code               = item['item_code']
     jan                        = item['jan']
     item_origin_url            = item['item_origin_url']
-    begin
-      category_codes           = item['categories'].flatten.map { |ca| ca['category_id'] if ca['depth'] == 1 && !ca['category_id'].include?('p-bandai') }.compact!.join(' ')
-    rescue
-      category_codes           = ""
-    end
+    cates = []
+    item['categories'].each_with_index do |categories, i|
+      categories.each { |category| cates << category['category_id'] if category['depth'] == i + 1 && !category['category_id'].include?('p-bandai')} if categories
+    end if item['categories']
+    category_codes             = cates.join(' ')
     main_image_url             = main_image[0]['url']
     sub_image_url_1            = "http://buyee.jp/images/common/top/flow_purchase.png"
     copyright                  = item['copyright'] || 'copyright'
@@ -81,8 +81,8 @@ Array.new(args).each do |json_file|
     buyable_period_end         = [buyable_end_time.strftime('%Y%m%d'), buyable_end_time.strftime('%Y%m%d%H'), buyable_end_time.strftime('%Y%m%d%H%M')].sample
     used                       = item['condition']
     if item['country_options']
-      sales_area_white         = item['country_options']['buyable']['allow'] if HEADER.include? 'sales-area-white'
-      sales_area_black         = item['country_options']['buyable']['deny'] if HEADER.include? 'sales-area-black'
+      sales_area_white         = item['country_options']['buyable']['allow'].join(' ') if HEADER.include? 'sales-area-white'
+      sales_area_black         = item['country_options']['buyable']['deny'].join(' ') if HEADER.include? 'sales-area-black'
     end
 
     values = %W(#{code} #{shop_code} #{name} #{name_en} #{name_chs} #{name_cht} #{variations} #{price} #{description} #{description_en} #{description_chs} #{description_cht} #{meta_keywords} #{meta_keywords_en} #{meta_keywords_chs} #{meta_keywords_cht} #{meta_description} #{meta_description_en} #{meta_description_chs} #{meta_description_cht} #{visible} #{sale_price} #{sale_period_start} #{sale_period_end} #{buyable_quantities_at_once} #{product_code} #{jan} #{item_origin_url} #{category_codes} #{main_image_url} #{sub_image_url_1} #{copyright} #{copyright_en} #{copyright_chs} #{copyright_cht} #{buyable_period_start} #{buyable_period_end} #{used})
