@@ -32,7 +32,6 @@ Array.new(args).each do |json_file|
     main_image = item['images'].select { |img| img['url'].include?('main') }
 
     # それぞれのカラムに対応するデータを定義
-    begin
       code                      = item['item_code']
       shop_code                 = json['partners'][0]['partner_id'] # 一番ショップコードに近く、リアルなデータ
       name                      = item['title']
@@ -41,15 +40,15 @@ Array.new(args).each do |json_file|
       name_cht                  = "我们想要吃"
       # comvinationやoptionsがnilの場合は見送る
       begin
-      variations = item['variations'].map { |variation|
-        variation['combination'].map { |opt_code, opt_value_code|
-          option_name = item['options'].find { |o| o['option_code'] == opt_code }['title']
-          option_value = item['options']
-            .find {|o| o['option_code'] == opt_code }['values']
-            .find {|v| v['value'] == opt_code_value }['name']
-          "#{option_name}:#{@option_value}"
-        }.join('#') + "=#{variation['sku']}"
-      }.join('&')
+        variations = item['variations'].map { |variation|
+          variation['combination'].map { |opt_code, opt_value_code|
+            option_name = item['options'].find { |o| o['option_code'] == opt_code }['title']
+            option_value = item['options']
+              .find {|o| o['option_code'] == opt_code }['values']
+              .find {|v| v['value'] == opt_value_code }['name']
+            "#{option_name}:#{@option_value}"
+          }.join('#') + "=#{variation['sku']}"
+        }.join('&')
       rescue
         variations = ""
       end
@@ -98,9 +97,6 @@ Array.new(args).each do |json_file|
         sales_area_whitelist         = item['country_options']['buyable']['allow']&.join(' ') if HEADER.include? 'sales-area-whitelist'
         sales_area_blacklist         = item['country_options']['buyable']['deny']&.join(' ') if HEADER.include? 'sales-area-blacklist'
       end
-    rescue
-      raise "エラーが発生したjsonファイル: #{json_file}"
-    end
 
     values = %W(#{code} #{shop_code} #{name} #{name_en} #{name_chs} #{name_cht} #{variations} #{price} #{description} #{description_en} #{description_chs} #{description_cht} #{meta_keywords} #{meta_keywords_en} #{meta_keywords_chs} #{meta_keywords_cht} #{meta_description} #{meta_description_en} #{meta_description_chs} #{meta_description_cht} #{visible} #{sale_price} #{sale_period_start} #{sale_period_end} #{buyable_quantities_at_once} #{product_code} #{jan} #{item_origin_url} #{category_codes} #{main_image_url} #{sub_image_url_1} #{copyright} #{copyright_en} #{copyright_chs} #{copyright_cht} #{buyable_period_start} #{buyable_period_end} #{used})
     values.push(sales_area_whitelist) if HEADER.include? 'sales-area-whitelist'
