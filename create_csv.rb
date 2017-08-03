@@ -32,57 +32,72 @@ Array.new(args).each do |json_file|
     main_image = item['images'].select { |img| img['url'].include?('main') }
 
     # それぞれのカラムに対応するデータを定義
-    code                      = item['item_code']
-    shop_code                 = json['partners'][0]['partner_id'] # 一番ショップコードに近く、リアルなデータ
-    name                      = item['title']
-    name_en                   = "name_en"
-    name_chs                  = "我们想要吃"
-    name_cht                  = "我们想要吃"
-    colors                    = item['options'].flat_map { |op| op['values'].map { |value| "色:#{value['name']}" } if op['option_code'] == 'color' }.compact!
-    variations                = item['options'].flat_map { |op| op['values'].map { |value| "#{colors.sample}#サイズ:#{value['name']}=id-#{value['name'].downcase}" }.join('&') if op['option_code'] == 'size' }.compact!&.pop
-    price                     = item['price']
-    description               = item['description']
-    description_en            = "description_en"
-    description_chs           = "我们想要吃"
-    description_cht           = "我们想要吃"
-    meta_keywords             = item['meta_keywordswords']
-    meta_keywords_en          = "meta_keywords_en"
-    meta_keywords_chs         = "我们想要吃"
-    meta_keywords_cht         = "我们想要吃"
-    meta_description          = item['meta_description']
-    meta_description_en       = "meta_desc_en"
-    meta_description_chs      = "我们想要吃"
-    meta_description_cht      = "我们想要吃"
-    visible                   = rand(2)
-    sale_price                = [nil, price - 50, price - 100].sample
-    if sale_price.nil?
-      sale_period_start, sale_period_end = nil
-    else
-      sale_period_start  = [sale_start_time.strftime('%Y%m%d'), sale_start_time.strftime('%Y%m%d%H'), sale_start_time.strftime('%Y%m%d%H%M'), nil].sample
-      sale_period_end    = [sale_end_time.strftime('%Y%m%d'), sale_end_time.strftime('%Y%m%d%H'), sale_end_time.strftime('%Y%m%d%H%M'), nil].sample
-      sale_price         = nil if sale_period_start.nil? && sale_period_end.nil?
-    end
-    buyable_quantities_at_once = item['sale_limit']
-    product_code               = item['item_code']
-    jan                        = item['jan']
-    item_origin_url            = item['item_origin_url']
-    category_codes = item['categories']
-    .map { |cat_route| cat_route&.max { |c1,c2| c1['depth'] <=> c2['depth'] } if cat_route }  # depth が一番大きいやつ
-    .reject { |cat| cat['category_id'].include? 'p-bandai' if cat }  # バンダイカテゴリを除外
-    .map { |cat| cat['category_id'] if cat }  # category から id だけ抽出
-    .join(' ')
-    main_image_url             = main_image[0]['url']
-    sub_image_url_1            = "http://buyee.jp/images/common/top/flow_purchase.png"
-    copyright                  = item['copyright'] || 'copyright'
-    copyright_en               = 'copyright_en'
-    copyright_chs              = 'copytight_chs'
-    copyright_cht              = 'copyright_cht'
-    buyable_period_start       = [buyable_start_time.strftime('%Y%m%d'), buyable_start_time.strftime('%Y%m%d%H'), buyable_start_time.strftime('%Y%m%d%H%M')].sample
-    buyable_period_end         = [buyable_end_time.strftime('%Y%m%d'), buyable_end_time.strftime('%Y%m%d%H'), buyable_end_time.strftime('%Y%m%d%H%M')].sample
-    used                       = item['condition']
-    if item['country_options']
-      sales_area_white         = item['country_options']['buyable']['allow'].join(' ') if HEADER.include? 'sales-area-white'
-      sales_area_black         = item['country_options']['buyable']['deny'].join(' ') if HEADER.include? 'sales-area-black'
+    begin
+      code                      = item['item_code']
+      shop_code                 = json['partners'][0]['partner_id'] # 一番ショップコードに近く、リアルなデータ
+      name                      = item['title']
+      name_en                   = "name_en"
+      name_chs                  = "我们想要吃"
+      name_cht                  = "我们想要吃"
+      # comvinationやoptionsがnilの場合は見送る
+      begin
+      variations = item['variations'].map { |variation|
+        variation['combination'].map { |opt_code, opt_value_code|
+          option_name = item['options'].find { |o| o['option_code'] == opt_code }['title']
+          item['options'].find { |option| @option_value = option['values'].find { |ov| ov['value'] == opt_value_code }['name'] if option['option_code'] == opt_code }
+          "#{option_name}:#{@option_value}"
+        }.join('#') + "=#{variation['sku']}"
+      }.join('&')
+      rescue
+        variations = ""
+      end
+
+      price                     = item['price']
+      description               = item['description']
+      description_en            = "description_en"
+      description_chs           = "我们想要吃"
+      description_cht           = "我们想要吃"
+      meta_keywords             = item['meta_keywordswords']
+      meta_keywords_en          = "meta_keywords_en"
+      meta_keywords_chs         = "我们想要吃"
+      meta_keywords_cht         = "我们想要吃"
+      meta_description          = item['meta_description']
+      meta_description_en       = "meta_desc_en"
+      meta_description_chs      = "我们想要吃"
+      meta_description_cht      = "我们想要吃"
+      visible                   = rand(2)
+      sale_price                = [nil, price - 50, price - 100].sample
+      if sale_price.nil?
+        sale_period_start, sale_period_end = nil
+      else
+        sale_period_start  = [sale_start_time.strftime('%Y%m%d'), sale_start_time.strftime('%Y%m%d%H'), sale_start_time.strftime('%Y%m%d%H%M'), nil].sample
+        sale_period_end    = [sale_end_time.strftime('%Y%m%d'), sale_end_time.strftime('%Y%m%d%H'), sale_end_time.strftime('%Y%m%d%H%M'), nil].sample
+        sale_price         = nil if sale_period_start.nil? && sale_period_end.nil?
+      end
+      buyable_quantities_at_once = item['sale_limit']
+      product_code               = item['item_code']
+      jan                        = item['jan']
+      item_origin_url            = item['item_origin_url']
+      category_codes = item['categories'].compact
+        .map { |cat_route| cat_route&.max { |c1,c2| c1['depth'] <=> c2['depth'] } }  # depth が一番大きいやつ
+        .reject { |cat| cat['category_id'].include? 'p-bandai' }  # バンダイカテゴリを除外
+        .map { |cat| cat['category_id'] }  # category から id だけ抽出
+        .join(' ')
+      main_image_url             = main_image[0]['url']
+      sub_image_url_1            = "http://buyee.jp/images/common/top/flow_purchase.png"
+      copyright                  = item['copyright'] || 'copyright'
+      copyright_en               = 'copyright_en'
+      copyright_chs              = 'copytight_chs'
+      copyright_cht              = 'copyright_cht'
+      buyable_period_start       = [buyable_start_time.strftime('%Y%m%d'), buyable_start_time.strftime('%Y%m%d%H'), buyable_start_time.strftime('%Y%m%d%H%M')].sample
+      buyable_period_end         = [buyable_end_time.strftime('%Y%m%d'), buyable_end_time.strftime('%Y%m%d%H'), buyable_end_time.strftime('%Y%m%d%H%M')].sample
+      used                       = item['condition']
+      if item['country_options']
+        sales_area_whitelist         = item['country_options']['buyable']['allow']&.join(' ') if HEADER.include? 'sales-area-whitelist'
+        sales_area_blacklist         = item['country_options']['buyable']['deny']&.join(' ') if HEADER.include? 'sales-area-blacklist'
+      end
+    rescue
+      raise "エラーが発生したjsonファイル: #{json_file}"
     end
 
     values = %W(#{code} #{shop_code} #{name} #{name_en} #{name_chs} #{name_cht} #{variations} #{price} #{description} #{description_en} #{description_chs} #{description_cht} #{meta_keywords} #{meta_keywords_en} #{meta_keywords_chs} #{meta_keywords_cht} #{meta_description} #{meta_description_en} #{meta_description_chs} #{meta_description_cht} #{visible} #{sale_price} #{sale_period_start} #{sale_period_end} #{buyable_quantities_at_once} #{product_code} #{jan} #{item_origin_url} #{category_codes} #{main_image_url} #{sub_image_url_1} #{copyright} #{copyright_en} #{copyright_chs} #{copyright_cht} #{buyable_period_start} #{buyable_period_end} #{used})
