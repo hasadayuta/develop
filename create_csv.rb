@@ -44,7 +44,9 @@ Array.new(args).each do |json_file|
       variations = item['variations'].map { |variation|
         variation['combination'].map { |opt_code, opt_value_code|
           option_name = item['options'].find { |o| o['option_code'] == opt_code }['title']
-          item['options'].find { |option| @option_value = option['values'].find { |ov| ov['value'] == opt_value_code }['name'] if option['option_code'] == opt_code }
+          option_value = item['options']
+            .find {|o| o['option_code'] == opt_code }['values']
+            .find {|v| v['value'] == opt_code_value }['name']
           "#{option_name}:#{@option_value}"
         }.join('#') + "=#{variation['sku']}"
       }.join('&')
