@@ -101,6 +101,6 @@ Array.new(args).each do |json_file|
     values = %W(#{code} #{shop_code} #{name} #{name_en} #{name_chs} #{name_cht} #{variations} #{price} #{description} #{description_en} #{description_chs} #{description_cht} #{meta_keywords} #{meta_keywords_en} #{meta_keywords_chs} #{meta_keywords_cht} #{meta_description} #{meta_description_en} #{meta_description_chs} #{meta_description_cht} #{visible} #{sale_price} #{sale_period_start} #{sale_period_end} #{buyable_quantities_at_once} #{product_code} #{jan} #{item_origin_url} #{category_codes} #{main_image_url} #{sub_image_url_1} #{copyright} #{copyright_en} #{copyright_chs} #{copyright_cht} #{buyable_period_start} #{buyable_period_end} #{used})
     values.push(sales_area_whitelist) if HEADER.include? 'sales-area-whitelist'
     values.push(sales_area_blacklist) if HEADER.include? 'sales-area-blacklist'
-    puts values.join(',')
+    puts values.map{|v| "\"#{ v&.gsub('"', '""') }\"" }.join(',')
   end
 end
