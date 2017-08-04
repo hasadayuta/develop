@@ -77,8 +77,9 @@ Array.new(args).each.with_index do |json_file,file_no|
         if sale_price.nil?
           sale_period_start, sale_period_end = nil
         else
-          sale_period_start  = [sale_start_time.strftime('%Y%m%d'), sale_start_time.strftime('%Y%m%d%H'), sale_start_time.strftime('%Y%m%d%H%M'), nil].sample
-          sale_period_end    = [sale_end_time.strftime('%Y%m%d'), sale_end_time.strftime('%Y%m%d%H'), sale_end_time.strftime('%Y%m%d%H%M'), nil].sample
+          sale_period_format = ['%Y%m%d','%Y%m%d%H','%Y%m%d%H%M'].sample
+          sale_period_start  = [sale_start_time.strftime(sale_period_format), nil].sample
+          sale_period_end    = [sale_end_time.strftime(sale_period_format), nil].sample
           sale_price         = nil if sale_period_start.nil? && sale_period_end.nil?
         end
         buyable_quantities_at_once = item['sale_limit']
@@ -96,8 +97,9 @@ Array.new(args).each.with_index do |json_file,file_no|
         copyright_en               = 'copyright_en'
         copyright_chs              = 'copytight_chs'
         copyright_cht              = 'copyright_cht'
-        buyable_period_start       = [buyable_start_time.strftime('%Y%m%d'), buyable_start_time.strftime('%Y%m%d%H'), buyable_start_time.strftime('%Y%m%d%H%M')].sample
-        buyable_period_end         = [buyable_end_time.strftime('%Y%m%d'), buyable_end_time.strftime('%Y%m%d%H'), buyable_end_time.strftime('%Y%m%d%H%M')].sample
+        buyable_period_format = ['%Y%m%d','%Y%m%d%H','%Y%m%d%H%M'].sample
+        buyable_period_start       = buyable_start_time.strftime(buyable_period_format)
+        buyable_period_end         = buyable_end_time.strftime(buyable_period_format)
         used                       = item['condition']
         if item['country_options']
           sales_area_whitelist         = item['country_options']['buyable']['allow']&.join(' ') if file_no % 2 == 0
