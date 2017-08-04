@@ -82,7 +82,7 @@ Array.new(args).each.with_index do |json_file,file_no|
           sale_price         = nil if sale_period_start.nil? && sale_period_end.nil?
         end
         buyable_quantities_at_once = item['sale_limit']
-        product_code               = item['item_code']
+        product_code               = item['product_code']
         jan                        = item['jan']
         item_origin_url            = item['item_origin_url']
         category_codes = item['categories'].compact
