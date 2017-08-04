@@ -12,10 +12,12 @@ args = ARGV
 
 system('rm items_v1.csv') if File.exist?('items_v1.csv')
 
+MAX_SUB_IMAGE_NUMBER=29
+
 # SALES_AREA = %w(hk tw kr)
 SALES_AREA_COLORS = %w(sales-area-whitelist sales-area-blacklist)
 
-HEADER = %w(code shop-code name name@en name@chs name@cht variations price description description@en description@chs description@cht meta-keywords meta-keywords@en meta-keywords@chs meta-keywords@cht meta-description meta-description@en meta-description@chs meta-description@cht visible sale-price sale-period-start sale-period-end buyable-quantities-at-once product-code jan item-origin-url category-codes main-image-url sub-image-url-1 copyright copyright@en copyright@chs copyright@cht buyable-period-start buyable-period-end used sales-area-whitelist sales-area-blacklist)
+HEADER = %w(code shop-code name name@en name@chs name@cht variations price description description@en description@chs description@cht meta-keywords meta-keywords@en meta-keywords@chs meta-keywords@cht meta-description meta-description@en meta-description@chs meta-description@cht visible sale-price sale-period-start sale-period-end buyable-quantities-at-once product-code jan item-origin-url category-codes copyright copyright@en copyright@chs copyright@cht buyable-period-start buyable-period-end used sales-area-whitelist sales-area-blacklist main-image-url).push( *(1..MAX_SUB_IMAGE_NUMBER).map{|i| "sub-image-url-#{i}"} )
 
 # サンプル的なvariations
 VARIATIONS = %w(色:赤#サイズ:S=RS001&色:赤#サイズ:M=RM001&色:赤#サイズ:L=RL001&色:黄#サイズ:S=YS001&色:黄#サイズ:M=YM001&色:黄#サイズ:L=YL001&色:青#サイズ:S=BS001&色:青#サイズ:M=BM001&色:青#サイズ:L=BL001 色:赤=red 色:赤=red&色:青=blue 色:赤#サイズ:S=red-s 色:赤#サイズ:S=red-s&色:赤#サイズ:M=red-m&色:青#サイズ:S=blue-s&色:青#サイズ:M=blue-m)
@@ -34,8 +36,6 @@ Array.new(args).each.with_index do |json_file,file_no|
 
       buyable_start_time = DateTime.parse(item['orderable_start'])
       buyable_end_time   = DateTime.parse(item['orderable_end'])
-
-      main_image = item['images'].select { |img| img['url'].include?('main') }
 
       # それぞれのカラムに対応するデータを定義
         code                      = item['item_code']
@@ -90,8 +90,8 @@ Array.new(args).each.with_index do |json_file,file_no|
           .reject { |cat| cat['category_id'].include? 'p-bandai' }  # バンダイカテゴリを除外
           .map { |cat| cat['category_id'] }  # category から id だけ抽出
           .join(' ')
-        main_image_url             = main_image[0]['url']
-        sub_image_url_1            = "http://buyee.jp/images/common/top/flow_purchase.png"
+        main_image_url             = item['images'][0]&.dig('url')
+        sub_image_urls             = item['images'][1..MAX_SUB_IMAGE_NUMBER].map{|img| img['url'] }
         copyright                  = item['copyright'] || 'copyright'
         copyright_en               = 'copyright_en'
         copyright_chs              = 'copytight_chs'
@@ -103,8 +103,7 @@ Array.new(args).each.with_index do |json_file,file_no|
           sales_area_whitelist         = item['country_options']['buyable']['allow']&.join(' ') if file_no % 2 == 0
           sales_area_blacklist         = item['country_options']['buyable']['deny']&.join(' ') if file_no % 2 == 1
         end
-
-      values = %W(#{code} #{shop_code} #{name} #{name_en} #{name_chs} #{name_cht} #{variations} #{price} #{description} #{description_en} #{description_chs} #{description_cht} #{meta_keywords} #{meta_keywords_en} #{meta_keywords_chs} #{meta_keywords_cht} #{meta_description} #{meta_description_en} #{meta_description_chs} #{meta_description_cht} #{visible} #{sale_price} #{sale_period_start} #{sale_period_end} #{buyable_quantities_at_once} #{product_code} #{jan} #{item_origin_url} #{category_codes} #{main_image_url} #{sub_image_url_1} #{copyright} #{copyright_en} #{copyright_chs} #{copyright_cht} #{buyable_period_start} #{buyable_period_end} #{used} #{sales_area_whitelist} #{sales_area_blacklist})
+      values = %W(#{code} #{shop_code} #{name} #{name_en} #{name_chs} #{name_cht} #{variations} #{price} #{description} #{description_en} #{description_chs} #{description_cht} #{meta_keywords} #{meta_keywords_en} #{meta_keywords_chs} #{meta_keywords_cht} #{meta_description} #{meta_description_en} #{meta_description_chs} #{meta_description_cht} #{visible} #{sale_price} #{sale_period_start} #{sale_period_end} #{buyable_quantities_at_once} #{product_code} #{jan} #{item_origin_url} #{category_codes} #{copyright} #{copyright_en} #{copyright_chs} #{copyright_cht} #{buyable_period_start} #{buyable_period_end} #{used} #{sales_area_whitelist} #{sales_area_blacklist} #{main_image_url}).push( *(1..MAX_SUB_IMAGE_NUMBER).map{|i| sub_image_urls[i]} )
       puts values.map{|v| "\"#{ v&.gsub('"', '""') }\"" }.join(',')
     rescue
       STDERR.puts "error occured in processing #{json_file}"
