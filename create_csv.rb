@@ -64,7 +64,7 @@ Array.new(args).each.with_index do |json_file,file_no|
         description_en            = "description_en"
         description_chs           = "我们想要吃"
         description_cht           = "我们想要吃"
-        meta_keywords             = item['meta_keywordswords']
+        meta_keywords             = item['meta_keywords']
         meta_keywords_en          = "meta_keywords_en"
         meta_keywords_chs         = "我们想要吃"
         meta_keywords_cht         = "我们想要吃"
