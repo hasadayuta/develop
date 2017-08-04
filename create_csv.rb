@@ -31,8 +31,8 @@ Array.new(args).each.with_index do |json_file,file_no|
       json = JSON.parse(f.read)
       item = json['item']
 
-      sale_start_time    = Faker::Time.between(Time.local(2015, 01, 01), Time.local(2015, 12, 31))
-      sale_end_time      = sale_start_time + (60 * 60)
+      sale_start_time    = Faker::Time.between(DateTime.now.prev_year, DateTime.now.next_year)
+      sale_end_time      = Faker::Time.between(sale_start_time, DateTime.now.next_year)
 
       buyable_start_time = DateTime.parse(item['orderable_start'])
       buyable_end_time   = DateTime.parse(item['orderable_end'])
