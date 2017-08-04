@@ -1,6 +1,11 @@
 require 'date'
 require 'faker'
 require 'json'
+require 'optparse'
+
+opts = ARGV.getopts('hb', 'show-header', 'show-body')
+show_header = opts['h'] || opts['show-header'] || (!opts['b'] && !opts['show-body'])
+show_body = opts['b'] || opts['show-body'] || (!opts['h'] && !opts['show-header'])
 
 # 引数例: jsons/000/*, jsons/00*/*, jsons/000/* jsons/001/* など
 args = ARGV
@@ -15,7 +20,7 @@ HEADER = %w(code shop-code name name@en name@chs name@cht variations price descr
 # サンプル的なvariations
 VARIATIONS = %w(色:赤#サイズ:S=RS001&色:赤#サイズ:M=RM001&色:赤#サイズ:L=RL001&色:黄#サイズ:S=YS001&色:黄#サイズ:M=YM001&色:黄#サイズ:L=YL001&色:青#サイズ:S=BS001&色:青#サイズ:M=BM001&色:青#サイズ:L=BL001 色:赤=red 色:赤=red&色:青=blue 色:赤#サイズ:S=red-s 色:赤#サイズ:S=red-s&色:赤#サイズ:M=red-m&色:青#サイズ:S=blue-s&色:青#サイズ:M=blue-m)
 
-puts HEADER.join(',')
+puts HEADER.join(',') if show_header
 
 Array.new(args).each do |json_file|
   File.open(json_file) do |f|
@@ -108,4 +113,4 @@ Array.new(args).each do |json_file|
       raise
     end
   end
-end
+end if show_body
